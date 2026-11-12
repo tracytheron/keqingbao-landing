@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>客情宝 · 客户再多，也不漏一次跟进</title>
+<meta name="description" content="客情宝 —— 销售人员的客户记忆外挂。帮你记住每一个客户、提醒你每一次跟进、留住每一笔成交。微信扫码免费体验。" />
+<style>
+  :root {
+    --brand: #4F6EF7;
+    --brand-dark: #405BE0;
+    --brand-soft: #EEF1FE;
+    --bg: #F6F7F9;
+    --card: #FFFFFF;
+    --text: #1A1C2E;
+    --muted: #6B7280;
+    --line: #ECEEF3;
+    --ok: #16A34A;
+    --warn: #F59E0B;
+    --radius: 18px;
+    --shadow: 0 8px 30px rgba(31, 41, 80, .08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 18px; }
+
+  /* 导航 */
+  .nav {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(255,255,255,.82);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner { display: flex; align-items: center; gap: 10px; height: 56px; }
+  .logo {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+    display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 15px;
+  }
+  .brand-name { font-weight: 800; font-size: 17px; letter-spacing: .5px; }
+  .nav-slogan { margin-left: auto; font-size: 12px; color: var(--muted); display: none; }
+  @media (min-width: 560px) { .nav-slogan { display: block; } }
+
+  /* Hero */
+  .hero { text-align: center; padding: 46px 0 30px; }
+  .hero h1 {
+    font-size: 30px; line-height: 1.3; font-weight: 900; letter-spacing: .5px;
+  }
+  .hero h1 .hl { color: var(--brand); }
+  .hero .sub {
+    margin: 14px auto 0; max-width: 520px; font-size: 16px; color: var(--muted);
+  }
+  .hero .tags { margin-top: 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .hero .tags span {
+    font-size: 12px; color: var(--brand-dark); background: var(--brand-soft);
+    padding: 5px 11px; border-radius: 999px; font-weight: 600;
+  }
+
+  .qr-card {
+    margin: 26px auto 0; width: 232px; background: #fff; border-radius: 22px;
+    padding: 18px; box-shadow: var(--shadow); border: 1px solid var(--line);
+  }
+  .qr-card img { width: 100%; height: auto; display: block; border-radius: 10px; }
+  .qr-card .tip { margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .qr-card .tip b { color: var(--text); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--brand); color: #fff; font-weight: 700; font-size: 15px;
+    padding: 13px 22px; border-radius: 14px; border: none; cursor: pointer;
+    box-shadow: 0 6px 18px rgba(79,110,247,.32); transition: transform .15s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .hero .btn { margin-top: 22px; }
+
+  /* 实时使用人数（翻动数字） */
+  .live-users { margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 7px; }
+  .lu-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--ok);
+    box-shadow: 0 0 0 0 rgba(22,163,74,.5); animation: lu-pulse 1.8s infinite;
+  }
+  @keyframes lu-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(22,163,74,.5); }
+    70% { box-shadow: 0 0 0 7px rgba(22,163,74,0); }
+    100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); }
+  }
+  .lu-text { font-size: 13px; color: var(--muted); }
+  .lu-num { display: inline-flex; gap: 2px; vertical-align: middle; margin: 0 2px; }
+  .reel {
+    width: 16px; height: 24px; overflow: hidden; display: inline-block;
+    background: var(--brand-soft); border-radius: 5px;
+  }
+  .reel-strip {
+    display: flex; flex-direction: column;
+    transition: transform .6s cubic-bezier(.2,.7,.3,1);
+  }
+  .reel-strip span {
+    height: 24px; line-height: 24px; font-size: 15px; font-weight: 800;
+    color: var(--brand-dark); text-align: center;
+  }
+
+  /* 通用 section */
+  section.block { padding: 38px 0; }
+  .sec-title { font-size: 22px; font-weight: 850; text-align: center; }
+  .sec-sub { text-align: center; color: var(--muted); margin-top: 8px; font-size: 14px; }
+
+  /* 痛点 */
+  .pains { display: grid; gap: 14px; margin-top: 24px; }
+  @media (min-width: 640px) { .pains { grid-template-columns: repeat(3, 1fr); } }
+  .pain {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px; box-shadow: var(--shadow);
+  }
+  .pain .ic { width: 38px; height: 38px; border-radius: 11px; background: #FFF1F0; color: #EF4444; display: grid; place-items: center; margin-bottom: 10px; }
+  .pain h3 { font-size: 16px; margin-bottom: 4px; }
+  .pain p { font-size: 13.5px; color: var(--muted); }
+
+  /* 功能 */
+  .features { display: grid; gap: 14px; margin-top: 24px; }
+  @media (min-width: 560px) { .features { grid-template-columns: repeat(2, 1fr); } }
+  .feat {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px; box-shadow: var(--shadow); display: flex; gap: 13px; align-items: flex-start;
+  }
+  .feat .ic {
+    flex: 0 0 auto; width: 42px; height: 42px; border-radius: 12px;
+    background: var(--brand-soft); color: var(--brand-dark); display: grid; place-items: center;
+  }
+  .feat h3 { font-size: 15.5px; margin-bottom: 3px; }
+  .feat p { font-size: 13px; color: var(--muted); }
+
+  /* 预览（CSS 手机 mock，无需截图） */
+  .preview { background: linear-gradient(180deg, #EEF1FE 0%, var(--bg) 60%); }
+  .phone {
+    width: 250px; margin: 26px auto 0; background: #fff; border-radius: 30px;
+    border: 8px solid #1A1C2E; box-shadow: var(--shadow); overflow: hidden; padding: 14px 12px;
+  }
+  .phone .p-h { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .phone .p-h b { color: var(--text); font-size: 13px; }
+  .p-card { background: var(--brand-soft); border-radius: 12px; padding: 11px 12px; margin-bottom: 9px; }
+  .p-card .t { font-size: 11px; color: var(--brand-dark); font-weight: 700; }
+  .p-line { height: 7px; background: #D8DEFB; border-radius: 4px; margin-top: 7px; }
+  .p-line.s { width: 60%; }
+  .p-row { display: flex; gap: 8px; }
+  .p-row .p-card { flex: 1; }
+  .p-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+  .p-dot.r { background: #EF4444; } .p-dot.g { background: var(--ok); } .p-dot.b { background: var(--brand); }
+  .preview .note { text-align: center; font-size: 12px; color: var(--muted); margin-top: 14px; }
+
+  /* 定价 */
+  .pricing-grid { display: grid; gap: 14px; margin-top: 24px; }
+  @media (min-width: 640px) { .pricing-grid { grid-template-columns: repeat(4, 1fr); } }
+  .plan {
+    background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius);
+    padding: 18px 14px; text-align: center; box-shadow: var(--shadow); position: relative;
+  }
+  .plan.best { border-color: var(--brand); box-shadow: 0 10px 28px rgba(79,110,247,.22); }
+  .plan .badge {
+    position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+    background: var(--brand); color: #fff; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .plan .badge.early { background: var(--warn); }
+  .plan .price-old {
+    font-size: 12px; color: #B6BCC8; text-decoration: line-through; margin-top: 2px;
+  }
+  .plan h4 { font-size: 15px; color: var(--muted); font-weight: 700; }
+  .plan .price { font-size: 26px; font-weight: 900; margin: 8px 0 2px; }
+  .plan .price small { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .plan .desc { font-size: 12px; color: var(--muted); min-height: 32px; }
+  .plan ul { list-style: none; margin: 12px 0 0; text-align: left; }
+  .plan li { font-size: 12.5px; color: var(--text); padding: 4px 0 4px 20px; position: relative; }
+  .plan li::before { content: "✓"; color: var(--ok); position: absolute; left: 0; font-weight: 800; }
+  .plan li.off { color: #B6BCC8; }
+  .plan li.off::before { content: "—"; color: #C9CEDA; }
+
+  /* CTA 大区 */
+  .cta-band {
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+    border-radius: 24px; padding: 34px 22px; text-align: center; color: #fff;
+    box-shadow: 0 14px 36px rgba(79,110,247,.34);
+  }
+  .cta-band h2 { font-size: 22px; font-weight: 850; }
+  .cta-band p { opacity: .92; margin-top: 8px; font-size: 14px; }
+  .cta-band .qr-white {
+    width: 168px; background: #fff; border-radius: 18px; padding: 12px; margin: 20px auto 0;
+  }
+  .cta-band .qr-white img { width: 100%; display: block; border-radius: 8px; }
+  .cta-band .qr-white .t { color: #444; font-size: 12px; margin-top: 8px; font-weight: 600; }
+
+  /* 页脚 */
+  footer { padding: 30px 0 40px; text-align: center; color: var(--muted); font-size: 12.5px; }
+  footer .f-logo { font-weight: 800; color: var(--text); margin-bottom: 6px; }
+  footer a { color: var(--brand); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="logo">客</div>
+    <div class="brand-name">客情宝</div>
+    <div class="nav-slogan">客户再多，也不漏一次跟进</div>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero wrap">
+    <h1>客户再多，<br>也<span class="hl">不漏一次跟进</span></h1>
+    <p class="sub">销售人员的「客户记忆外挂」——帮你记住每一个客户、提醒你每一次跟进、留住每一笔成交。</p>
+    <div class="tags">
+      <span>保险顾问</span><span>房产置业</span><span>课程顾问</span><span>理财销售</span>
+    </div>
+
+    <div class="qr-card">
+      <img src="qrcode.png" alt="客情宝微信小程序码" />
+      <div class="tip">微信扫一扫，<b>免费开始管理客户</b></div>
+    </div>
+    <div class="live-users">
+      <span class="lu-dot"></span>
+      <span class="lu-text">已有 <span class="lu-num" id="liveNum">5603</span> 位销售正在使用客情宝</span>
+    </div>
+  </section>
+
+  <!-- 痛点 -->
+  <section class="block wrap">
+    <h2 class="sec-title">销售每天在头疼什么？</h2>
+    <p class="sec-sub">客户在微信里，但 CRM 不在微信里</p>
+    <div class="pains">
+      <div class="pain">
+        <div class="ic">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        </div>
+        <h3>客户记不住</h3>
+        <p>几百个微信客户，聊天记录就是 CRM，一换手机全没了。</p>
+      </div>
+      <div class="pain">
+        <div class="ic">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>
+        </div>
+        <h3>跟进容易忘</h3>
+        <p>约好的「下周再聊」，转头就忘，错过最佳成交窗口。</p>
+      </div>
+      <div class="pain">
+        <div class="ic">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/><path d="M12 7v5l3 3"/></svg>
+        </div>
+        <h3>关系难沉淀</h3>
+        <p>客户动态散落各处，复盘没依据，老客户慢慢变沉睡。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 功能 -->
+  <section class="block wrap">
+    <h2 class="sec-title">客情宝替你记住这些</h2>
+    <p class="sec-sub">轻量、随身、打开即用，不折腾</p>
+    <div class="features">
+      <div class="feat">
+        <div class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M16 4v5"/></svg>
+        </div>
+        <div>
+          <h3>结构化客户档案</h3>
+          <p>优先级 SABC、关系温度、个性化标签，一眼掌握每个客户状态。</p>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        </div>
+        <div>
+          <h3>跟进时间线</h3>
+          <p>电话 / 微信 / 拜访全记录，客户关系不断档，新人接手也清楚。</p>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        </div>
+        <div>
+          <h3>到期提醒 + 今日待办</h3>
+          <p>超期自动标红，每天打开就知该跟谁聊，再也不漏。</p>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 4-6"/></svg>
+        </div>
+        <div>
+          <h3>销售漏斗</h3>
+          <p>8 个沟通阶段分布一目了然，瓶颈在哪、谁快成交全看清。</p>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
+        </div>
+        <div>
+          <h3>目标管理</h3>
+          <p>设定金额目标，进度自动追踪，离达成还差多少心里有数。</p>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="ic">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg>
+        </div>
+        <div>
+          <h3>周期复盘</h3>
+          <p>按周 / 月自动汇总，沉淀成交经验，越做越顺。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 定价 -->
+  <section class="block wrap" id="pricing">
+    <h2 class="sec-title">会员权益</h2>
+    <p class="sec-sub">免费就能用，按需升级</p>
+    <div class="pricing-grid">
+      <div class="plan">
+        <h4>免费版</h4>
+        <div class="price">¥0</div>
+        <div class="desc">20 位客户 · 核心功能全开放</div>
+        <ul>
+          <li>客户档案 + 跟进时间线</li>
+          <li>到期提醒 + 今日待办</li>
+          <li>销售漏斗 + 复盘</li>
+          <li class="off">超出 20 位客户</li>
+          <li class="off">导出 Excel</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <h4>月卡</h4>
+        <div class="price">¥9.9<small> /月</small></div>
+        <div class="desc">随用随开</div>
+        <ul>
+          <li>不限客户数量</li>
+          <li>个性化配置</li>
+          <li>导出 Excel</li>
+          <li>回收站永久保留</li>
+        </ul>
+      </div>
+      <div class="plan best">
+        <div class="badge">最划算</div>
+        <h4>终身版</h4>
+        <div class="price">¥199</div>
+        <div class="desc">一次买断，永久有效</div>
+        <ul>
+          <li>不限客户数量</li>
+          <li>全部会员功能</li>
+          <li>后续更新免费</li>
+          <li>优先支持</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <div class="badge early">早鸟价</div>
+        <h4>年卡</h4>
+        <div class="price">¥59.9<small> /年</small></div>
+        <div class="price-old">原价 ¥79.9</div>
+        <div class="desc">立省 ¥20，仅限前 500 名</div>
+        <ul>
+          <li>不限客户数量</li>
+          <li>个性化配置</li>
+          <li>导出 Excel</li>
+          <li>回收站永久保留</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="block wrap">
+    <div class="cta-band">
+      <h2>现在就开始管理你的客户</h2>
+      <p>微信扫一扫，免费体验客情宝</p>
+      <div class="qr-white">
+        <img src="qrcode.png" alt="客情宝微信小程序码" />
+        <div class="t">长按或扫码进入小程序</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="f-logo">客情宝</div>
+    <div>销售人员的客户记忆外挂 · 天哥亲自开发运营</div>
+    <div style="margin-top:8px">隐私说明与用户协议以小程序内公示为准 · © 2026 客情宝</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var liveNum = document.getElementById('liveNum');
+  if (!liveNum) return;
+  var H = 24; // 与 .reel 高度一致
+  function buildReels(num) {
+    var str = String(num);
+    liveNum.innerHTML = '';
+    for (var i = 0; i < str.length; i++) {
+      var reel = document.createElement('span');
+      reel.className = 'reel';
+      var strip = document.createElement('span');
+      strip.className = 'reel-strip';
+      for (var d = 0; d < 10; d++) {
+        var s = document.createElement('span');
+        s.textContent = d;
+        strip.appendChild(s);
+      }
+      reel.appendChild(strip);
+      liveNum.appendChild(reel);
+      reel._strip = strip;
+    }
+    setReels(num);
+  }
+  function setReels(num) {
+    var str = String(num);
+    var reels = liveNum.querySelectorAll('.reel');
+    if (reels.length !== str.length) { buildReels(num); return; }
+    for (var i = 0; i < str.length; i++) {
+      reels[i]._strip.style.transform = 'translateY(' + (-(+str[i]) * H) + 'px)';
+    }
+  }
+  var current = 5560;
+  buildReels(current);
+  // 载入时快速翻动到 5603
+  var up = setInterval(function () {
+    current++;
+    setReels(current);
+    if (current >= 5603) { clearInterval(up); liveLoop(); }
+  }, 70);
+  // 之后每隔几秒随机 +1，制造"实时增长"观感
+  function liveLoop() {
+    setInterval(function () {
+      if (Math.random() < 0.65) { current++; setReels(current); }
+    }, 4200);
+  }
+})();
+</script>
+
+</body>
+</html>
